@@ -5,18 +5,12 @@ import functools
 def log_queries(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        # Try to extract the SQL query from positional or keyword arguments
-        query = None
-        if args:
-            query = args[0]
-        elif 'query' in kwargs:
-            query = kwargs['query']
-        
+        # Extract the SQL query (assumed to be the first positional arg or 'query' kwarg)
+        query = args[0] if args else kwargs.get('query')
         if query:
             print(f"Executing SQL Query: {query}")
         else:
-            print("No SQL query found to log.")
-
+            print("No SQL query provided.")
         return func(*args, **kwargs)
     return wrapper
 
@@ -31,4 +25,3 @@ def fetch_all_users(query):
 
 # Fetch users while logging the query
 users = fetch_all_users(query="SELECT * FROM users")
-
