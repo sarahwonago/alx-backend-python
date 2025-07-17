@@ -4,6 +4,7 @@ from parameterized import parameterized
 from utils import access_nested_map, get_json, memoize
 from unittest.mock import patch, Mock
 
+
 class TestAccessNestedMap(unittest.TestCase):
     """Unit tests for access_nested_map"""
 
@@ -25,7 +26,6 @@ class TestAccessNestedMap(unittest.TestCase):
         self.assertEqual(str(context.exception), f"'{expected_key}'")
 
 
-
 class TestGetJson(unittest.TestCase):
     """Tests for get_json function"""
 
@@ -35,15 +35,12 @@ class TestGetJson(unittest.TestCase):
     ])
     @patch('utils.requests.get')
     def test_get_json(self, test_url, test_payload, mock_get):
-        # Configure the mock
         mock_response = Mock()
         mock_response.json.return_value = test_payload
         mock_get.return_value = mock_response
 
-        # Call the function
         result = get_json(test_url)
 
-        # Assertions
         mock_get.assert_called_once_with(test_url)
         self.assertEqual(result, test_payload)
 
@@ -62,22 +59,19 @@ class TestMemoize(unittest.TestCase):
             def a_property(self):
                 return self.a_method()
 
-        with patch.object(TestClass, 'a_method', return_value=42) as mock_method:
+        with patch.object(
+            TestClass, 'a_method', return_value=42
+        ) as mock_method:
             obj = TestClass()
 
-            # Call the memoized property twice
             first = obj.a_property
             second = obj.a_property
 
-            # Assert result is correct
             self.assertEqual(first, 42)
             self.assertEqual(second, 42)
 
-            # Assert a_method is only called once
             mock_method.assert_called_once()
 
 
 if __name__ == "__main__":
     unittest.main()
-
-
