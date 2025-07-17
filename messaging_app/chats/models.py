@@ -40,10 +40,10 @@ class Message(models.Model):
     Each message is linked to a specific conversation and has a sender.
     """
     message_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    sent_at = models.DateTimeField(auto_now_add=True)
     conversation = models.ForeignKey(Conversation, related_name='messages', on_delete=models.CASCADE)
     sender = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='messages_sent', on_delete=models.CASCADE)
     message_body = models.TextField()
-    timestamp = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
 
     def __str__(self):
