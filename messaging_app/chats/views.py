@@ -7,6 +7,7 @@ from rest_framework.status import HTTP_403_FORBIDDEN  # Checker expects this
 from .models import Conversation, Message
 from .serializers import ConversationSerializer, MessageSerializer
 from .permissions import IsParticipantOfConversation
+from .fillters import MessageFilter
 
 
 class ConversationViewSet(viewsets.ModelViewSet):
@@ -52,6 +53,7 @@ class MessageViewSet(viewsets.ModelViewSet):
     serializer_class = MessageSerializer
     permission_classes = [IsAuthenticated, IsParticipantOfConversation]
     filter_backends = [filters.OrderingFilter]
+    filterset_class = MessageFilter
     ordering_fields = ["created_at", "sent_at"]
     ordering = ["-created_at"]
 
