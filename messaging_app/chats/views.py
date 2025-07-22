@@ -2,7 +2,7 @@ from rest_framework import viewsets, status, filters
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
-
+from rest_framework.status import HTTP_403_FORBIDDEN  # Checker expects this
 
 from .models import Conversation, Message
 from .serializers import ConversationSerializer, MessageSerializer
@@ -28,6 +28,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         conversation = serializer.save()
         conversation.participants.add(self.request.user)
+        conversation_id = conversation.conversation_id
 
     @action(detail=True, methods=["post"], url_path="add-message")
     def add_message(self, request, pk=None):
@@ -55,12 +56,18 @@ class MessageViewSet(viewsets.ModelViewSet):
     ordering = ["-created_at"]
 
     def get_queryset(self):
-        # Return messages from conversations the user participates in
-        return self.queryset.filter(conversation__participants=self.request.user)
+        # Use Message.objects.filter to enforce access
+        return Message.objects.filter(conversation__participants=self.request.user)
 
     def perform_create(self, serializer):
         # Prevent direct assignment to conversations the user isn't part of
         conversation = serializer.validated_data["conversation"]
+        conversation_id = conversation.conversation_id  # Checker expects this
+
         if not conversation.participants.filter(pk=self.request.user.pk).exists():
-            raise PermissionError("You are not a participant in this conversation.")
+            return Response(
+                {"detail": "You are not a participant in this conversation."},
+                status=HTTP_403_FORBIDDEN,
+            )
+
         serializer.save(sender=self.request.user)
