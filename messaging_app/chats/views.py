@@ -3,21 +3,23 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 
+
 from .models import Conversation, Message
 from .serializers import ConversationSerializer, MessageSerializer
+from .permissions import IsParticipant
 
 
 class ConversationViewSet(viewsets.ModelViewSet):
     """
     ViewSet for listing, creating, and retrieving conversations.
     """
+
     queryset = Conversation.objects.all()
     serializer_class = ConversationSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsParticipant]
     filter_backends = [filters.OrderingFilter]
-    ordering_fields = ['created_at'] 
-    ordering = ['-created_at']  # Default ordering
-
+    ordering_fields = ["created_at"]
+    ordering = ["-created_at"]  # Default ordering
 
     def get_queryset(self):
         # Return conversations that the authenticated user participates in
@@ -27,7 +29,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
         conversation = serializer.save()
         conversation.participants.add(self.request.user)
 
-    @action(detail=True, methods=['post'], url_path='add-message')
+    @action(detail=True, methods=["post"], url_path="add-message")
     def add_message(self, request, pk=None):
         """
         Custom endpoint to send a message to this conversation.
@@ -44,13 +46,13 @@ class MessageViewSet(viewsets.ModelViewSet):
     """
     ViewSet for listing, retrieving, and creating messages.
     """
+
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [filters.OrderingFilter]
-    ordering_fields = ['created_at', 'sent_at']
-    ordering = ['-created_at']
-
+    ordering_fields = ["created_at", "sent_at"]
+    ordering = ["-created_at"]
 
     def get_queryset(self):
         # Return messages from conversations the user participates in
@@ -58,7 +60,7 @@ class MessageViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         # Prevent direct assignment to conversations the user isn't part of
-        conversation = serializer.validated_data['conversation']
+        conversation = serializer.validated_data["conversation"]
         if not conversation.participants.filter(pk=self.request.user.pk).exists():
             raise PermissionError("You are not a participant in this conversation.")
         serializer.save(sender=self.request.user)
