@@ -1,5 +1,7 @@
 from datetime import datetime, time
 from django.http import HttpResponseForbidden
+from collections import defaultdict
+from datetime import datetime
 
 
 class RequestLoggingMiddleware:
@@ -34,3 +36,38 @@ class RestrictAccessByTimeMiddleware:
                 )
 
         return self.get_response(request)
+
+
+class OffensiveLanguageMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+        self.request_log = defaultdict(list)  # {ip: [timestamp1, timestamp2, ...]}
+        self.limit = 5  # max requests
+        self.time_window = 60  # seconds
+
+    def __call__(self, request):
+        # Only monitor POST requests to message endpoints
+        if request.method == "POST" and "/messages" in request.path:
+            ip = self.get_ip(request)
+            now = time.time()
+
+            # Remove timestamps older than 60 seconds
+            self.request_log[ip] = [
+                timestamp
+                for timestamp in self.request_log[ip]
+                if now - timestamp < self.time_window
+            ]
+
+            if len(self.request_log[ip]) >= self.limit:
+                return HttpResponseForbidden("Message limit exceeded. Try again later.")
+
+            self.request_log[ip].append(now)
+
+        return self.get_response(request)
+
+    def get_ip(self, request):
+        # Use X-Forwarded-For if behind a proxy
+        x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+        if x_forwarded_for:
+            return x_forwarded_for.split(",")[0].strip()
+        return request.META.get("REMOTE_ADDR")
