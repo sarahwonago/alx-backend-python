@@ -1,4 +1,5 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
+from django.contrib.auth.models import User
 from django.dispatch import receiver, pre_save
 from .models import Message, Notification, MessageHistory
 from django.utils import timezone
@@ -32,3 +33,9 @@ def log_message_edit(sender, instance, **kwargs):
             old_content=old_message.content,
             edited_by=instance.edited_by,
         )
+
+
+@receiver(post_delete, sender=User)
+def cleanup_user_data(sender, instance, **kwargs):
+    # In case any data is still left that wasn't handled by CASCADE
+    MessageHistory.objects.filter(edited_by=instance).delete()
