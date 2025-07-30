@@ -38,4 +38,5 @@ def log_message_edit(sender, instance, **kwargs):
 @receiver(post_delete, sender=User)
 def cleanup_user_data(sender, instance, **kwargs):
     # In case any data is still left that wasn't handled by CASCADE
+    Message.objects.filter(sender=instance).delete()
     MessageHistory.objects.filter(edited_by=instance).delete()
