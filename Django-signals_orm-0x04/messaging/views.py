@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 
 from django.shortcuts import render
 from .models import Message
+from django.views.decorators.cache import cache_page
 
 
 @login_required
@@ -16,6 +17,7 @@ def delete_user(request):
 
 
 @login_required
+@cache_page(60)  # Cache this view for 60 seconds
 def conversation_view(request):
     # Fetch messages sent or received by the logged-in user
     root_messages = (

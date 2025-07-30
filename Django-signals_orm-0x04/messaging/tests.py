@@ -5,8 +5,8 @@ from .models import Message, Notification
 
 class SignalTestCase(TestCase):
     def setUp(self):
-        self.user1 = User.objects.create_user(username="alice", password="pass123")
-        self.user2 = User.objects.create_user(username="bob", password="pass456")
+        self.user1 = User.objects.create_user(username="alice")
+        self.user2 = User.objects.create_user(username="bob")
 
     def test_notification_created_on_message(self):
         message = Message.objects.create(
