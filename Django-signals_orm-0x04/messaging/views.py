@@ -44,3 +44,9 @@ def send_message(request):
             parent_message=parent,
         )
         return redirect("conversation_view")
+
+
+@login_required
+def unread_messages_view(request):
+    unread_messages = Message.unread.for_user(request.user)
+    return render(request, "messaging/unread_inbox.html", {"messages": unread_messages})
