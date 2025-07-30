@@ -25,3 +25,22 @@ def conversation_view(request):
     )
 
     return render(request, "messaging/conversation.html", {"messages": root_messages})
+
+
+@login_required
+def send_message(request):
+    if request.method == "POST":
+        content = request.POST["content"]
+        receiver_id = request.POST["receiver_id"]
+        parent_id = request.POST.get("parent_message_id")
+
+        receiver = User.objects.get(id=receiver_id)
+        parent = Message.objects.get(id=parent_id) if parent_id else None
+
+        Message.objects.create(
+            sender=request.user,
+            receiver=receiver,
+            content=content,
+            parent_message=parent,
+        )
+        return redirect("conversation_view")
