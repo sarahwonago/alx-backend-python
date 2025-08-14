@@ -11,6 +11,11 @@ spec:
     matchLabels:
       app: messaging-app
       version: blue
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
   template:
     metadata:
       labels:
@@ -19,7 +24,7 @@ spec:
     spec:
       containers:
         - name: messaging-app
-          image: your-dockerhub-username/messaging_app:blue # OLD VERSION
+          image: your-dockerhub-username/messaging_app:2.0 # Updated version
           ports:
             - containerPort: 8000
           env:
