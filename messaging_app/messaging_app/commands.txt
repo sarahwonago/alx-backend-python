@@ -1,0 +1,8 @@
+# Enable ingress in Minikube
+minikube addons enable ingress
+
+# Apply ingress resource
+kubectl apply -f messaging_app/ingress.yaml
+
+# Verify ingress is created
+kubectl get ingress
